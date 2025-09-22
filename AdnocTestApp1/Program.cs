@@ -1,4 +1,5 @@
 using AdnocTestApp1.Data;
+using AdnocTestApp1.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace AdnocTestApp1
@@ -14,6 +15,8 @@ namespace AdnocTestApp1
 
             builder.Services.AddDbContext<AppDbContext>(option=> option.UseSqlite(builder
                 .Configuration.GetConnectionString("DefaultConnection")));
+
+            builder.Services.AddTransient<IDepartmentRepository,DepartmentRepository>();
 
             var app = builder.Build();
 
