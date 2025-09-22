@@ -1,0 +1,100 @@
+﻿@model DepartmentListViewModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Create Department</h2>
+                </div>
+                <div class="card-body">
+
+
+                    <form id="departmentCreationForm" asp-action="Create" class="needs-validation" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Department.Name" class="form-label"></label>
+                            <input asp-for="Department.Name" class="form-control" />
+                            <span asp-validation-for="Department.Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Department.Location" class="form-label"></label>
+                            <input asp-for="Department.Location" class="form-control" />
+                            <span asp-validation-for="Department.Location" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-6">
+                            <input type="submit" value="Create" class="btn btn-primary" />
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+         
+        </div>
+    </div>
+</div>
+
+@* @await Component.InvokeAsync("DepartmentList") *@
+
+<div id="departmentList">@await Html.PartialAsync("_DepartmentList",Model.Departments)</div>
+
+<script>
+      $(document).ready(function(){
+
+          console.log("Javascript function fired");
+          $("#departmentCreationForm").on('submit',function(e){
+             e.preventDefault();
+
+             var form = $(this);
+             console.log(form);
+             var token = $('input[name="__RequestVerificationToken"]').val();
+             var tableUrl = '@Url.Action("DepartmentList","Departments")';
+             var data = form.serialize();
+
+             console.log(data);
+             $.ajax(
+                 {
+                    url:form.attr('action'),
+                    type: 'POST',
+                    data: data,
+                    headers: {
+                        'RequestVerificationToken':token
+                    },
+                    success: function(response){
+                        if(response.success){
+                           $.get(tableUrl,function(html)
+                           {
+                              
+                                $("#departmentList").html(html);
+                           });
+                        }
+                        else{
+                            form.find('.text-danger').text('');
+                            form.prepend('<div class="text-danger mb-2">' + response.errors[0] + '</div>');
+                        }
+                    },
+                    error: function(){
+                        alert("Error while creating the app");
+                    }
+
+                 })
+
+
+        });
+    }
+    );
+</script>

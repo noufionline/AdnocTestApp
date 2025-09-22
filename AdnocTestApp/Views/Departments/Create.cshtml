@@ -1,0 +1,98 @@
+﻿@model AdnocTestApp.Models.Department
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Create Department</h2>
+                </div>
+                <div class="card-body">
+
+                  
+                    <form id="departmentCreationForm" asp-action="Create" class="needs-validation" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Name" class="form-label"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Location" class="form-label"></label>
+                            <input asp-for="Location" class="form-control" />
+                            <span asp-validation-for="Location" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-6">
+                            <input type="submit" value="Create" class="btn btn-primary" />
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a asp-action="Index" class="link-primary">Back to List</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+@{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+   
+    <script>
+          $(document).ready(function(){
+     
+              console.log("Javascript function fired");
+              $("#departmentCreationForm").on('submit',function(e){
+                 e.preventDefault();
+
+                 var form = $(this);
+                 console.log(form);
+                 var token = $('input[name="__RequestVerificationToken"]').val();
+
+                 var data = form.serialize();
+
+                 console.log(data);
+                 $.ajax(
+                     {
+                        url:form.attr('action'),
+                        type: 'POST',
+                        data: data,
+                        headers: {
+                            'RequestVerificationToken':token
+                        },
+                        success: function(response){
+                            if(response.success){
+                                alert(response.redirectUrl);
+                                console.log(response.redirectUrl);
+                                window.location.href = response.redirectUrl || '/Departments/Index';
+                            }
+                            else{
+                                form.find('.text-danger').text('');
+                                form.prepend('<div class="text-danger mb-2">' + response.errors[0] + '</div>');
+                            }
+                        },
+                        error: function(){
+                            alert("Error while creating the app");
+                        }
+
+                     })
+
+
+            });
+        }
+        );
+    </script>
+}
+

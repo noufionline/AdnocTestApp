@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = "Departments Page";
+}
+
+@model List<Department>
+
+<h2>Departments</h2>
+
+<!-- Create form -->
+<form id="createForm">
+    <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="Name" name="Name" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Location</label>
+        <input type="text" id="Location" name="Location" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>
+
+<hr />
+
+<!-- Table -->
+<table class="table table-bordered" id="departmentsTable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Location</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var dept in Model)
+        {
+            <tr>
+                <td>@dept.Name</td>
+                <td>@dept.Location</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@section Scripts {
+    <script>
+        $("#createForm").submit(function (e) {
+            e.preventDefault();
+
+            var department = {
+                Name: $("#Name").val(),
+                Location: $("#Location").val()
+            };
+
+            $.ajax({
+                url: '@Url.Action("CreateAjax", "Home")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(department),
+                success: function (response) {
+                    if (response.success) {
+                        // Append new row to the table
+                        $("#departmentsTable tbody").append(
+                            `<tr><td>${response.data.name}</td><td>${response.data.location}</td></tr>`
+                        );
+
+                        // Reset form
+                        $("#createForm")[0].reset();
+                    } else {
+                        alert("Error: " + response.errors.join(", "));
+                    }
+                },
+                error: function () {
+                    alert("Something went wrong!");
+                }
+            });
+        });
+    </script>
+}
