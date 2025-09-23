@@ -1,0 +1,210 @@
+﻿@using AdnocTestApp2.Data
+@model List<Department>
+@{
+    ViewData["Title"] = "Department";
+}
+
+
+<h1>Department</h1>
+<hr/>
+
+
+
+
+<div class="container">
+    <form id="createForm">
+        <input type="hidden" id="Id" name="Id" />
+        <div class="mb-3">
+            <label for="Name" class="form-label">Name</label>
+            <input class="form-control" id="Name" name="Name" />
+        </div>
+        <div class="mb-3">
+            <label for="Location" class="form-label">Location</label>
+            <input class="form-control" id="Location" name="Location" />
+        </div>
+        <div class="mb-3">
+            <button class="btn btn-primary" id="submitBtn">Create</button>
+            <button class="btn btn-secondary ms-1 d-none" id="cancelBtn">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<table class="table table-bordered" id="departmentsTable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Location</th>
+            <th class="text-end text-nowrap w-auto">Actions</th>
+        </tr>
+    </thead>
+    
+    <tbody>
+        @foreach (var item in Model){
+        <tr data-id="@item.Id">
+            <td>@item.Name</td>
+            <td>@item.Location</td>
+            <td class="text-end text-nowrap w-auto" >
+               <div class="btn-group-sm d-inline-flex" role="group">
+                    <button class="btn btn-warning editBtn">Edit</button>
+                    <button class="btn btn-danger  deleteBtn">Delete</button>
+               </div>
+            </td>
+        </tr>
+        }
+    </tbody>
+    
+</table>
+
+
+
+@section Scripts{
+
+        @await Html.PartialAsync("_ValidationScriptsPartial");
+
+    <script>
+        
+        let isEditMode=false;
+
+
+
+        $(document).on("click",".editBtn",function()
+        {
+            let row=$(this).closest("tr");
+
+            let id = row.data("id");
+            let name = row.find("td:eq(0)").text();
+            let location = row.find("td:eq(1)").text();
+
+             
+            $("#Id").val(id);
+            $("#Name").val(name);
+            $("#Location").val(location);
+
+            $("#submitBtn").text("Update");
+            $("#cancelBtn").removeClass("d-none");
+
+            isEditMode = true;
+
+        });
+
+
+        $("#createForm").validate({
+            rules:{
+                Name: { required: true},
+                Location : {required: true}
+            },
+            messages:{
+                Name: {required: "Department Name is required"},
+                Location: {required: "Location is required"}
+            },
+            errorClass: "text-danger",
+            submitHandler:function(form,e){
+                e.preventDefault();
+
+                let department = {
+                    name: $("#Name").val(),
+                    location: $("#Location").val()
+                };
+
+                if($("#Id").val()){
+                    department.id = $("#Id").val();
+                };
+               
+                if(!isEditMode){
+                    $.ajax({
+                        url: '@Url.Action("Create","Departments")',
+                        type:'POST',
+                        contentType:'application/json',
+                        data: JSON.stringify(department)
+                    })
+                    .done(function(response)
+                    {
+                        if(response.success){
+                            let item = response.data;
+                            console.log(item);
+
+                            let tbody = $("#departmentsTable tbody");
+                            tbody.append(`<tr data-id="${item.id}">
+                                                <td>${item.name}</td>
+                                                <td>${item.location}</td>
+                                                <td class="text-end text-nowrap w-auto" >
+                                                   <div class="btn-group-sm d-inline-flex" role="group">
+                                                        <button class="btn btn-warning editBtn">Edit</button>
+                                                        <button class="btn btn-danger  deleteBtn">Delete</button>
+                                                   </div>
+                                                </td>
+                                            </tr>`);
+                            resetForm();
+                            $("#Name").focus();
+                        }
+                    })
+                    .fail(function(){});
+                }else{
+                    $.ajax(
+                         {
+                             url:'@Url.Action("Edit","Departments")/' + $("#Id").val(),
+                             type: 'POST',
+                             contentType: 'application/json',
+                             data: JSON.stringify(department)
+                         }
+                    )
+                    .done(function(response)
+                    {
+                       if(response.success){
+                            let row = $(`#departmentsTable tbody tr[data-id="${response.data.id}"]`);
+                            console.log(row);
+                            row.find("td:eq(0)").text(response.data.name);
+                            row.find("td:eq(1)").text(response.data.location);
+                            resetForm();
+                       }
+                    })
+                    .fail(function(){});
+                }
+               
+            }
+        });
+        
+        $("#cancelBtn").on("click", function(e)
+        {
+            e.preventDefault();
+            resetForm();
+        });
+
+
+        function resetForm(){
+             $("#Id").val('');
+            $("#Name").val('');
+            $("#Location").val('');
+
+            isEditMode = false;
+             $("#submitBtn").text("Create");
+            $("#cancelBtn").addClass("d-none");
+        }
+
+
+        $(document).on("click",".deleteBtn",function()
+        {
+            let row = $(this).closest("tr");
+            let id = row.data("id");
+           
+            if(!confirm("Do you want to delete this record?")){
+                return;
+            }
+
+            $.ajax(
+                {
+                    url:'@Url.Action("Delete","Departments")',
+                    type: 'POST',
+                    data: JSON.stringify(id),
+                    contentType:'application/json'
+                })
+            .done(function(){
+                row.remove();
+            })
+            .fail(function(){});
+        });
+
+
+
+    </script>
+}

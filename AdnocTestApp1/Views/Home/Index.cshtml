@@ -77,24 +77,23 @@
                   data: JSON.stringify(department),
                   contentType: 'application/json'
 
-              }).done(function(response){
-                  var data = response.data;
-                         $('#departmentsTable tbody').append(`
-            <tr data-id="${data.id}">
-                <td>${data.name}</td>
-                <td>${data.location}</td>
-                <td>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-sm btn-warning editBtn">Edit</button>
-                        <button type="button" class="btn btn-sm btn-danger deleteBtn ms-1">Delete</button>
-                    </div>
-                </td>
-            </tr>
-        `);
-                  $('#createForm')[0].reset();
-                  $('#name').focus();
-              }
-              ).fail(function(xhr,status){
+                      }).done(function (response) {
+                                if (response.success) {
+                                    let item = response.data;
+                                    $("#departmentsTable tbody").append(`
+                                        <tr data-id="${item.id}">
+                                            <td>${item.name}</td>
+                                            <td>${item.location}</td>
+                                            <td class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-warning editBtn">Edit</button>
+                                                <button class="btn btn-sm btn-danger deleteBtn ms-1">Delete</button>
+                                            </td>
+                                        </tr>
+                                    `);
+                                    resetForm();
+                                }
+                            })
+        .fail(function(xhr,status){
                   var message = (xhr.responseJSON && xhr.responseJSON.message) || "Something went wrong!!!!";
                   alert(message);
               })
@@ -159,18 +158,16 @@
                 url: '@Url.Action("DeleteDepartment", "Home")',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify(id),
-                success: function (response) {
-                    if (response.success) {
-                        // Remove row from table
-                        row.remove();
-                    } else {
-                        alert("Error: " + response.message);
-                    }
-                },
-                error: function () {
-                    alert("Something went wrong while deleting.");
+                data: JSON.stringify(id)
+            }).done(function(response){
+                if(response.success){
+                    row.remove();
                 }
+                else{
+                    alert("Error: " + response.message);
+                }
+            }).fail(function(xhr,status){
+                 alert("Something went wrong while deleting.");
             });
         });
 
