@@ -28,7 +28,13 @@
         </div>
     </form>
 </div>
-
+<div class="row mb-3">
+    <div class="col d-inline-flex justify-content-end">
+        <div class="input-group w-auto">
+            <input type="text" placeholder="Search by Name..." id="filterInput" class="form-control" />
+        </div>
+    </div>
+</div>
 <table class="table table-bordered" id="departmentsTable">
     <thead>
         <tr>
@@ -172,10 +178,10 @@
 
 
         function resetForm(){
-             $("#Id").val('');
+            $("#Id").val('');
             $("#Name").val('');
             $("#Location").val('');
-
+            $("#Name").focus();
             isEditMode = false;
              $("#submitBtn").text("Create");
             $("#cancelBtn").addClass("d-none");
@@ -204,7 +210,15 @@
             .fail(function(){});
         });
 
+      
+         $("#filterInput").on("keyup", function () {
+              var value = $(this).val().toLowerCase();
 
+              $("#departmentsTable tbody tr").filter(function () {
+                  var name = $(this).find("td:first").text().toLowerCase();
+                  $(this).toggle(name.includes(value));
+              });
+          });
 
     </script>
 }
